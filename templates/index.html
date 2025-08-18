@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Car Brands Educational App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h1>Learn Car Brands</h1>
+    <div class="car-grid">
+        {% for car in cars %}
+            <div class="car-item">
+                <img src="{{ url_for('static', filename=car.image) }}" alt="{{ car.name }}" onclick="startQuiz('{{ car.name }}')">
+                <p>{{ car.name }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Modal for voice interaction -->
+    <div id="quiz-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeQuiz()">&times;</span>
+            <p id="prompt-text">Please say the name of this car.</p>
+            <button onclick="startListening()">Start Speaking</button>
+            <p id="feedback"></p>
+            <p>Stars: <span id="stars">0</span></p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
