@@ -1,0 +1,121 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f0f8ff;
+}
+
+.car-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.car-item {
+    margin: 10px;
+    border: 2px solid #ccc;
+    padding: 10px;
+    border-radius: 10px;
+    width: 18%; /* Adjusted for 5 items per row with margins */
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-sizing: border-box;
+}
+
+.car-item:hover {
+    transform: scale(1.05);
+}
+
+.car-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+/* Modal Styles for Listening Mode */
+
+.modal {
+    display: none;             /* << this now works            */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* When we add .active in JS, show + center it */
+.modal.active {
+    display: flex;             /* << moved here                */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 800px; /* Increased max-width for larger images */
+    text-align: center;
+}
+
+.modal-content img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.feedback-text {
+    margin-top: 20px;
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .car-item {
+        width: 22%; /* Slightly larger for medium screens */
+    }
+}
+
+@media (max-width: 900px) {
+    .car-item {
+        width: 28%; /* Three per row */
+    }
+}
+
+@media (max-width: 600px) {
+    .car-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .car-item {
+        width: 80%;
+    }
+
+    .modal-content {
+        width: 90%;
+    }
+}

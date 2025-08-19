@@ -3,30 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Car Brands Educational App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Updated CSS path to match the assistant's structure -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <h1>Learn Car Brands</h1>
+
+    <!-- Car Grid -->
     <div class="car-grid">
         {% for car in cars %}
             <div class="car-item">
-                <img src="{{ url_for('static', filename=car.image) }}" alt="{{ car.name }}" onclick="startQuiz('{{ car.name }}')">
+                <!-- Updated onclick to pass both car name and image URL -->
+                <img
+                    src="{{ url_for('static', filename=car.image) }}"
+                    alt="{{ car.name }}"
+                    onclick="startQuiz('{{ car.name }}', '{{ url_for('static', filename=car.image) }}')"
+                >
                 <p>{{ car.name }}</p>
+                <!-- Display stars per car with unique IDs -->
+                <p>Stars: <span id="stars-{{ car.name }}">{{ car.stars }}</span></p>
             </div>
         {% endfor %}
     </div>
 
-    <!-- Modal for voice interaction -->
-    <div id="quiz-modal" class="modal">
+    <!-- Modal for Voice Interaction -->
+    <div id="carModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeQuiz()">&times;</span>
-            <p id="prompt-text">Please say the name of this car.</p>
-            <button onclick="startListening()">Start Speaking</button>
-            <p id="feedback"></p>
-            <p>Stars: <span id="stars">{{ stars }}</span></p>
+            <!-- Larger Image in Modal -->
+            <img id="modalImage" src="" alt="Car Image" style="width: 100%; height: auto; border-radius: 5px;">
+            <!-- Prompt Text -->
+            <div id="prompt-text">Please say the name of this car.</div>
+            <!-- Feedback Text -->
+            <div id="feedback" class="feedback-text"></div>
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <!-- Updated JS path to match the assistant's structure -->
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>
