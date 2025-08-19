@@ -44,9 +44,65 @@ function checkAnswer(answer) {
         stars += 1;
         document.getElementById('stars').innerText = stars;
         document.getElementById('feedback').innerText = 'Great job! You correctly named ' + currentCar + '!';
+
+        // Send POST request to add star
+        fetch('/add_star', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ star: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.stars !== undefined) {
+                document.getElementById('stars').innerText = data.stars;
+            }
+        });
+
         // Optionally, add a star animation here
     } else {
         document.getElementById('feedback').innerText = 'Incorrect. This is ' + currentCar + '.';
+        // Optionally, provide additional details about the car
+    }
+}
+
+
+function speak(text) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+function checkAnswer(answer) {
+    if (answer === currentCar.toLowerCase()) {
+        stars += 1;
+        document.getElementById('stars').innerText = stars;
+        const successMessage = 'Great job! You correctly named ' + currentCar + '!';
+        document.getElementById('feedback').innerText = successMessage;
+        speak(successMessage);
+
+        // Send POST request to add star
+        fetch('/add_star', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ star: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.stars !== undefined) {
+                document.getElementById('stars').innerText = data.stars;
+            }
+        });
+
+        // Optionally, add a star animation here
+    } else {
+        const failureMessage = 'Incorrect. This is ' + currentCar + '.';
+        document.getElementById('feedback').innerText = failureMessage;
+        speak(failureMessage);
         // Optionally, provide additional details about the car
     }
 }
