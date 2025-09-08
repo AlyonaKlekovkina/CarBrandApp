@@ -1,3 +1,6 @@
-Flask
+Flask~=3.1.0
 SQLAlchemy
 gunicorn
+
+requests~=2.32.3
+flask-cors~=6.0.1
