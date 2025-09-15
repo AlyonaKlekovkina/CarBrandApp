@@ -3,6 +3,7 @@ let mediaRecorder;
 let audioChunks = [];
 let quizActive = false; // Flag to track if the quiz is active
 let mediaStream; // To store the media stream for proper closure
+let restartTimeout; // To store timeout IDs for cleanup
 
 // Function to clean and normalize text
 function cleanText(text) {
@@ -18,7 +19,7 @@ function startQuiz(carName, imageURL) {
     currentCar = carName;
     quizActive = true; // Set the quiz as active
     document.getElementById('feedback').innerText = '';
-    document.getElementById('prompt-text').innerText = 'Please say the name of this car.';
+    document.getElementById('prompt-text').innerText = 'Пожалуйста, назовите эту марку автомобиля.';
     document.getElementById('modalImage').src = imageURL;
     document.getElementById('carModal').classList.add('active');
     startListening();
@@ -29,13 +30,26 @@ function closeQuiz() {
     quizActive = false; // Set the quiz as inactive
     document.getElementById('carModal').classList.remove('active');
     stopListening();
+    
+    // Clear any pending restart timeouts
+    if (restartTimeout) {
+        clearTimeout(restartTimeout);
+        restartTimeout = null;
+    }
+    
+    // Stop any ongoing speech synthesis
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    
     document.getElementById('feedback').innerText = '';
+    currentCar = ''; // Clear current car
 }
 
 // Function to start listening to the user's voice
 async function startListening() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Sorry, your browser does not support audio recording.');
+        alert('Извините, ваш браузер не поддерживает запись аудио.');
         return;
     }
     try {
@@ -62,9 +76,13 @@ async function startListening() {
             }
         }, 2500);
     } catch (error) {
-        document.getElementById('feedback').innerText = 'Microphone access error: ' + error.message;
-        speak('I didn\'t catch that. Please try again.');
-        setTimeout(startListening, 1000);
+        document.getElementById('feedback').innerText = 'Ошибка доступа к микрофону: ' + error.message;
+        speak('Я не расслышал. Попробуйте ещё раз.');
+        restartTimeout = setTimeout(() => {
+            if (quizActive) { // Check if quiz is still active before restarting
+                startListening();
+            }
+        }, 1000);
     }
 }
 
@@ -81,17 +99,23 @@ async function transcribeAudio(audioBlob) {
         const data = await response.json();
         console.log('Transcription data:', data);
         if (response.ok) {
-            return data.text.trim().toLowerCase();
+            const transcriptionText = data.text.trim().toLowerCase();
+            console.log(`🎤 Transcription result: "${transcriptionText}"`);
+            return transcriptionText;
         } else {
             throw new Error(data.error || 'Transcription failed');
         }
     } catch (error) {
         console.error('Transcription Error:', error);
         if (quizActive) { // Only provide feedback if the quiz is active
-            document.getElementById('feedback').innerText = 'Transcription error: ' + error.message;
-            speak('I\'m having trouble understanding. Please try again.');
+            document.getElementById('feedback').innerText = 'Ошибка расшифровки: ' + error.message;
+            speak('У меня проблемы с пониманием. Попробуйте ещё раз.');
             // Only restart listening if the quiz is still active
-            setTimeout(startListening, 1000);
+            restartTimeout = setTimeout(() => {
+                if (quizActive) { // Check again before restarting
+                    startListening();
+                }
+            }, 1000);
         }
         return '';
     }
@@ -163,15 +187,25 @@ function similarity(a, b) {
 function checkAnswer(answer) {
     if (!quizActive) return;
 
+    console.log(`🧠 Checking answer: "${answer}" vs current car: "${currentCar}"`);
+    
     const cleanedAnswer = normalizeBrand(cleanText(answer));
     const cleanedCarName = normalizeBrand(cleanText(currentCar));
+    
+    console.log(`🧠 Cleaned: "${cleanedAnswer}" vs "${cleanedCarName}"`);
 
     const sim = similarity(cleanedAnswer, cleanedCarName);
+    console.log(`🧠 Similarity score: ${sim}`);
 
     if (cleanedAnswer === cleanedCarName || sim >= 0.7) {
-        const successMessage = `Good job! You correctly named ${currentCar}!`;
+        const successMessage = `Отлично! Вы правильно назвали ${currentCar}!`;
         document.getElementById('feedback').innerText = successMessage;
-        speak(successMessage);
+        
+        // Speak success message and close modal when speech is complete
+        speak(successMessage, () => {
+            // Wait a bit more after speech completes, then close
+            setTimeout(closeQuiz, 1000);
+        });
 
         fetch('/add_star', {
             method: 'POST',
@@ -185,21 +219,35 @@ function checkAnswer(answer) {
             }
         })
         .catch(error => console.error('Error:', error));
-
-        setTimeout(closeQuiz, 2000);
     } else {
-        const failureMessage = 'Try again!';
+        const failureMessage = 'Попробуйте ещё раз!';
         document.getElementById('feedback').innerText = failureMessage;
         speak(failureMessage);
-        setTimeout(startListening, 1000);
+        restartTimeout = setTimeout(() => {
+            if (quizActive) { // Check if quiz is still active before restarting
+                startListening();
+            }
+        }, 1000);
     }
 }
 
 // Function for speech synthesis
-function speak(text) {
-    if ('speechSynthesis' in window) {
+function speak(text, onComplete) {
+    // Only speak if quiz is active
+    if ('speechSynthesis' in window && quizActive) {
         const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ru-RU'; // Set Russian language
+        utterance.rate = 0.9; // Slightly slower for better understanding
+        
+        // Add event listener for when speech ends
+        if (onComplete && typeof onComplete === 'function') {
+            utterance.onend = onComplete;
+        }
+        
         window.speechSynthesis.speak(utterance);
+    } else if (onComplete && typeof onComplete === 'function') {
+        // If speech synthesis is not available, call callback immediately
+        onComplete();
     }
 }
 

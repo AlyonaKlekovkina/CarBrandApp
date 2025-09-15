@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Car Brands Educational App</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Learn Car Brands</h1>
+    <h1>Изучаем автомобильные бренды</h1>
 
     <!-- Car Grid -->
     <div class="car-grid">
@@ -21,7 +21,7 @@
                 >
                 <p>{{ car.name }}</p>
                 <!-- Display stars per car with unique IDs -->
-                <p>Stars: <span id="stars-{{ car.name }}">{{ car.stars }}</span></p>
+                <p>Звёзды: <span id="stars-{{ car.name }}">{{ car.stars }}</span></p>
             </div>
         {% endfor %}
     </div>
@@ -33,7 +33,7 @@
             <!-- Larger Image in Modal -->
             <img id="modalImage" src="" alt="Car Image" style="width: 100%; height: auto; border-radius: 5px;">
             <!-- Prompt Text -->
-            <div id="prompt-text">Please say the name of this car.</div>
+            <div id="prompt-text">Пожалуйста, назовите эту марку автомобиля.</div>
             <!-- Feedback Text -->
             <div id="feedback" class="feedback-text"></div>
         </div>
